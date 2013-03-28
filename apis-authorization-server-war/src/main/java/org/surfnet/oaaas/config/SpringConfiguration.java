@@ -84,7 +84,7 @@ public class SpringConfiguration {
           comboPooledDataSource.setTestConnectionOnCheckout(true);
 
       } catch (PropertyVetoException e) {
-          e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+          throw new RuntimeException(e);  //To change body of catch statement use File | Settings | File Templates.
       }
       return comboPooledDataSource;
   }
