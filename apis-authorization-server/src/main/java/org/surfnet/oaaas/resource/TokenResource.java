@@ -21,6 +21,7 @@ package org.surfnet.oaaas.resource;
 import static org.surfnet.oaaas.auth.OAuth2Validator.BEARER;
 import static org.surfnet.oaaas.auth.OAuth2Validator.GRANT_TYPE_AUTHORIZATION_CODE;
 import static org.surfnet.oaaas.auth.OAuth2Validator.GRANT_TYPE_REFRESH_TOKEN;
+import static org.surfnet.oaaas.auth.OAuth2Validator.GRANT_TYPE_CLIENT_CREDENTIALS;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -42,10 +43,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.surfnet.oaaas.auth.*;
 import org.surfnet.oaaas.auth.OAuth2Validator.ValidationResponse;
+import org.surfnet.oaaas.auth.principal.AuthenticatedPrincipal;
 import org.surfnet.oaaas.auth.principal.UserPassCredentials;
 import org.surfnet.oaaas.model.*;
 import org.surfnet.oaaas.repository.AccessTokenRepository;
 import org.surfnet.oaaas.repository.AuthorizationRequestRepository;
+import org.surfnet.oaaas.repository.ClientRepository;
 
 import com.sun.jersey.api.client.ClientResponse.Status;
 
@@ -70,6 +73,8 @@ public class TokenResource {
 
   @Inject
   private OAuth2Validator oAuth2Validator;
+  @Inject
+  private ClientRepository clientRepository;
 
   private static final Logger LOG = LoggerFactory.getLogger(TokenResource.class);
 
@@ -176,6 +181,8 @@ public class TokenResource {
         request = authorizationCodeToken(accessTokenRequest);
       } else if (GRANT_TYPE_REFRESH_TOKEN.equals(grantType)) {
         request = refreshTokenToken(accessTokenRequest);
+      }else if (GRANT_TYPE_CLIENT_CREDENTIALS.equals(grantType)) {
+          request = null;
       } else {
         return sendErrorResponse(ValidationResponse.UNSUPPORTED_GRANT_TYPE);
       }
@@ -183,6 +190,13 @@ public class TokenResource {
       return sendErrorResponse(e.v);
     }
     UserPassCredentials credentials = getUserPassCredentials(authorization, accessTokenRequest);
+    if(request==null){
+    	//GRANT_TYPE_CLIENT_CREDENTIALS
+    	request = new AuthorizationRequest();
+  	    request.setClient(clientRepository.findByClientId(credentials.getUsername()));
+  	    request.setPrincipal(new AuthenticatedPrincipal(credentials.getUsername()));
+  	    request.setGrantedScopes(java.util.Arrays.asList(accessTokenRequest.getScope()));
+    }
     if (!request.getClient().isExactMatch(credentials)) {
       return Response.status(Status.UNAUTHORIZED).header(WWW_AUTHENTICATE, BASIC_REALM).build();
     }

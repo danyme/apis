@@ -60,6 +60,7 @@ public class OAuth2ValidatorImpl implements OAuth2Validator {
     
     GRANT_TYPES.add(GRANT_TYPE_AUTHORIZATION_CODE);
     GRANT_TYPES.add(GRANT_TYPE_REFRESH_TOKEN);
+    GRANT_TYPES.add(GRANT_TYPE_CLIENT_CREDENTIALS);
   }
 
   @Inject

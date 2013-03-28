@@ -31,6 +31,7 @@ public interface OAuth2Validator {
   String GRANT_TYPE_AUTHORIZATION_CODE = "authorization_code";
 
   String GRANT_TYPE_REFRESH_TOKEN = "refresh_token";
+  String GRANT_TYPE_CLIENT_CREDENTIALS = "client_credentials";
 
   String BEARER = "bearer";
 
