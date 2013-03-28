@@ -19,6 +19,7 @@
 package org.surfnet.oaaas.authentication;
 
 import java.io.IOException;
+import java.util.Map;
 
 import javax.inject.Named;
 import javax.servlet.FilterChain;
@@ -83,10 +84,23 @@ public class FormLoginAuthenticator extends AbstractAuthenticator {
    *          the {@link HttpServletRequest}
    */
   protected void processForm(final HttpServletRequest request) {
-    setAuthStateValue(request, request.getParameter(AUTH_STATE));
-    AuthenticatedPrincipal principal = new AuthenticatedPrincipal(request.getParameter("username"));
-    request.getSession().setAttribute(SESSION_IDENTIFIER, principal);
-    setPrincipal(request, principal);
+	  if(users==null){
+		  users=new java.util.Properties();
+		  try {
+			users.load(getClass().getResourceAsStream("/users.properties"));
+		  } catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		  }
+	  }
+	  String username=request.getParameter("username");
+	  String password=request.getParameter("password");
+	  if(users.containsKey(username)&&users.getProperty(username).equals(password)){
+		    setAuthStateValue(request, request.getParameter(AUTH_STATE));
+		    AuthenticatedPrincipal principal = new AuthenticatedPrincipal(username);
+		    request.getSession().setAttribute(SESSION_IDENTIFIER, principal);
+		    setPrincipal(request, principal);
+	  }
   }
-
+  java.util.Properties users;
 }
