@@ -16,32 +16,22 @@
 
 package org.surfnet.oaaas.config;
 
-import javax.inject.Inject;
-import javax.servlet.Filter;
-import javax.servlet.ServletException;
-import javax.validation.Validator;
-
 import com.googlecode.flyway.core.Flyway;
-
 import org.apache.openjpa.persistence.PersistenceProviderImpl;
-import org.apache.tomcat.jdbc.pool.DataSource;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.ImportResource;
-import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.annotation.*;
 import org.springframework.core.env.Environment;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
-import org.surfnet.oaaas.auth.AbstractAuthenticator;
-import org.surfnet.oaaas.auth.AbstractUserConsentHandler;
-import org.surfnet.oaaas.auth.AuthenticationFilter;
-import org.surfnet.oaaas.auth.OAuth2Validator;
-import org.surfnet.oaaas.auth.OAuth2ValidatorImpl;
-import org.surfnet.oaaas.auth.UserConsentFilter;
+import org.surfnet.oaaas.auth.*;
 import org.surfnet.oaaas.repository.ExceptionTranslator;
 import org.surfnet.oaaas.repository.OpenJPAExceptionTranslator;
+
+import javax.inject.Inject;
+import javax.servlet.Filter;
+import javax.servlet.ServletException;
+import javax.validation.Validator;
+import java.beans.PropertyVetoException;
 
 /**
  *
@@ -72,12 +62,31 @@ public class SpringConfiguration {
 
   @Bean
   public javax.sql.DataSource dataSource() {
-    DataSource dataSource = new DataSource();
-    dataSource.setDriverClassName(env.getProperty("jdbc.driverClassName"));
-    dataSource.setUrl(env.getProperty("jdbc.url"));
-    dataSource.setUsername(env.getProperty("jdbc.username"));
-    dataSource.setPassword(env.getProperty("jdbc.password"));
-    return dataSource;
+//    DataSource dataSource = new DataSource();
+//    dataSource.setDriverClassName(env.getProperty("jdbc.driverClassName"));
+//    dataSource.setUrl(env.getProperty("jdbc.url"));
+//    dataSource.setUsername(env.getProperty("jdbc.username"));
+//    dataSource.setPassword(env.getProperty("jdbc.password"));
+//    return dataSource;
+      com.mchange.v2.c3p0.ComboPooledDataSource comboPooledDataSource = new com.mchange.v2.c3p0.ComboPooledDataSource();
+      try {
+          comboPooledDataSource.setDriverClass(env.getProperty("jdbc.driverClassName"));
+          comboPooledDataSource.setJdbcUrl(env.getProperty("jdbc.url"));
+          comboPooledDataSource.setUser(env.getProperty("jdbc.username"));
+          comboPooledDataSource.setPassword(env.getProperty("jdbc.password"));
+          comboPooledDataSource.setInitialPoolSize(10);
+          comboPooledDataSource.setMinPoolSize(10);
+          comboPooledDataSource.setMaxPoolSize(20);
+          comboPooledDataSource.setMaxIdleTime(600);
+          comboPooledDataSource.setAcquireIncrement(1);
+          comboPooledDataSource.setAcquireRetryAttempts(3);
+          comboPooledDataSource.setPreferredTestQuery("select 1");
+          comboPooledDataSource.setTestConnectionOnCheckout(true);
+
+      } catch (PropertyVetoException e) {
+          e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+      }
+      return comboPooledDataSource;
   }
 
   @Bean
